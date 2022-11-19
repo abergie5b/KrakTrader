@@ -2,7 +2,7 @@ import json
 from typing import Union, List
 from websockets import client, WebSocketClientProtocol
 
-from messages import (
+from .messages import (
     MarketDataSnapshot, 
     SubscriptionStatus, 
     MarketDataUpdate, 

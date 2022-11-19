@@ -2,15 +2,15 @@ import json
 import time
 from typing import List, Union
 
-from messages import (
+from .book import Book
+from kraken import (
     MarketDataSnapshot, 
     SubscriptionStatus, 
     MarketDataUpdate, 
     TradeUpdate, 
-    SystemState
+    SystemState,
+    KrakApp
 )
-from krak_app import KrakApp
-from book import Book
 
 
 class KrakTrader(KrakApp):

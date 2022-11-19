@@ -1,6 +1,6 @@
 import asyncio
 from typing import List
-from krak_trader import KrakTrader
+from app import KrakTrader
 
 async def main():
     symbols:List[str] = [ "XBT/USD" ]

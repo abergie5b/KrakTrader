@@ -1,10 +1,10 @@
 import bisect
 from typing import List, Callable
 
-from messages import (
-    Quote, 
+from kraken import (
+    MarketDataUpdate,
     SnapshotQuotes,
-    MarketDataUpdate
+    Quote, 
 )
 
 class Book:
