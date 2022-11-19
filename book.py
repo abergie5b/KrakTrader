@@ -1,8 +1,11 @@
 import bisect
 from typing import List, Callable
 
-from quote import Quote, SnapshotQuotes
-from market_data import MarketDataUpdate
+from messages import (
+    Quote, 
+    SnapshotQuotes,
+    MarketDataUpdate
+)
 
 class Book:
     def __init__(
