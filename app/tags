@@ -1,0 +1,130 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BUY	../common/__init__.py	/^    BUY = 1,$/;"	v	class:Side
+Book	../app/book.py	/^class Book:$/;"	c
+CANCELED	../common/__init__.py	/^    CANCELED = 'canceled'$/;"	v	class:OrderStatus
+Executor	../common/__init__.py	/^class Executor:$/;"	c
+KrakApp	../kraken/krak_app.py	/^class KrakApp(WebsocketHandler):$/;"	c
+KrakTrader	../app/krak_trader.py	/^class KrakTrader(KrakApp):$/;"	c
+MarketDataSnapshot	../kraken/messages.py	/^class MarketDataSnapshot:$/;"	c
+MarketDataUpdate	../kraken/messages.py	/^class MarketDataUpdate:$/;"	c
+NEW	../common/__init__.py	/^    NEW = 'new',$/;"	v	class:OrderStatus
+NONE	../common/__init__.py	/^    NONE = None,$/;"	v	class:OrderStatus
+Order	../common/__init__.py	/^class Order:$/;"	c
+OrderStatus	../common/__init__.py	/^class OrderStatus(Enum):$/;"	c
+OrderStatus	../kraken/messages.py	/^class OrderStatus:$/;"	c
+Quote	../common/__init__.py	/^class Quote:$/;"	c
+REPLACED	../common/__init__.py	/^    REPLACED = 'replaced',$/;"	v	class:OrderStatus
+SELL	../common/__init__.py	/^    SELL = 2$/;"	v	class:Side
+Side	../common/__init__.py	/^class Side(Enum):$/;"	c
+SnapshotQuotes	../kraken/messages.py	/^class SnapshotQuotes:$/;"	c
+StupidScalperStrategy	../app/strategy.py	/^class StupidScalperStrategy:$/;"	c
+SubscriptionStatus	../kraken/messages.py	/^class SubscriptionStatus:$/;"	c
+SymbolConfig	../kraken/__init__.py	/^class SymbolConfig:$/;"	c
+SystemState	../kraken/messages.py	/^class SystemState:$/;"	c
+Throttle	../common/__init__.py	/^class Throttle:$/;"	c
+Trade	../common/__init__.py	/^class Trade:$/;"	c
+TradeUpdate	../kraken/messages.py	/^class TradeUpdate:$/;"	c
+WebsocketClient	../common/websocket_client.py	/^class WebsocketClient:$/;"	c
+WebsocketHandler	../common/websocket_client.py	/^class WebsocketHandler:$/;"	c
+WorkingOrderBook	../common/__init__.py	/^class WorkingOrderBook:$/;"	c
+__eq__	../common/__init__.py	/^    def __eq__(self, other):$/;"	m	class:Quote	file:
+__init__	../app/book.py	/^    def __init__($/;"	m	class:Book
+__init__	../app/krak_trader.py	/^    def __init__($/;"	m	class:KrakTrader
+__init__	../app/strategy.py	/^    def __init__(self, app:KrakApp, symbol_config:SymbolConfig):$/;"	m	class:StupidScalperStrategy
+__init__	../common/__init__.py	/^    def __init__($/;"	m	class:Order
+__init__	../common/__init__.py	/^    def __init__($/;"	m	class:Quote
+__init__	../common/__init__.py	/^    def __init__($/;"	m	class:Trade
+__init__	../common/__init__.py	/^    def __init__(self): $/;"	m	class:WorkingOrderBook
+__init__	../common/__init__.py	/^    def __init__(self, max_messages_per_sec:int):$/;"	m	class:Throttle
+__init__	../common/__init__.py	/^    def __init__(self, workingorders:WorkingOrderBook):$/;"	m	class:Executor
+__init__	../common/websocket_client.py	/^    def __init__(self, url:str):$/;"	m	class:WebsocketClient
+__init__	../kraken/__init__.py	/^    def __init__(self, name:str, ccy:str, tick_size:float):$/;"	m	class:SymbolConfig
+__init__	../kraken/krak_app.py	/^    def __init__($/;"	m	class:KrakApp
+__init__	../kraken/messages.py	/^    def __init__($/;"	m	class:MarketDataSnapshot
+__init__	../kraken/messages.py	/^    def __init__($/;"	m	class:MarketDataUpdate
+__init__	../kraken/messages.py	/^    def __init__($/;"	m	class:OrderStatus
+__init__	../kraken/messages.py	/^    def __init__($/;"	m	class:SnapshotQuotes
+__init__	../kraken/messages.py	/^    def __init__($/;"	m	class:SubscriptionStatus
+__init__	../kraken/messages.py	/^    def __init__($/;"	m	class:SystemState
+__init__	../kraken/messages.py	/^    def __init__($/;"	m	class:TradeUpdate
+__repr__	../app/book.py	/^    def __repr__(self):$/;"	m	class:Book	file:
+__repr__	../common/__init__.py	/^    def __repr__(self):$/;"	m	class:Quote	file:
+__repr__	../common/__init__.py	/^    def __repr__(self):$/;"	m	class:Trade	file:
+__repr__	../kraken/messages.py	/^    def __repr__(self):$/;"	m	class:MarketDataSnapshot	file:
+__repr__	../kraken/messages.py	/^    def __repr__(self):$/;"	m	class:MarketDataUpdate	file:
+__repr__	../kraken/messages.py	/^    def __repr__(self):$/;"	m	class:SubscriptionStatus	file:
+__repr__	../kraken/messages.py	/^    def __repr__(self):$/;"	m	class:SystemState	file:
+__repr__	../kraken/messages.py	/^    def __repr__(self):$/;"	m	class:TradeUpdate	file:
+_crack	../kraken/messages.py	/^    def _crack(self, quotes: List) -> List[Quote]:$/;"	m	class:MarketDataUpdate
+_crack	../kraken/messages.py	/^    def _crack(self, quotes:List[float]) -> List[Quote]:$/;"	m	class:SnapshotQuotes
+_crack	../kraken/messages.py	/^    def _crack(self, trades: List) -> List[Trade]:$/;"	m	class:TradeUpdate
+_fire	../common/__init__.py	/^    def _fire(self, func:Callable, *args):$/;"	m	class:Throttle
+_get_signature	../kraken/krak_app.py	/^    def _get_signature(self, post_data:dict) -> str:$/;"	m	class:KrakApp
+_get_token	../kraken/krak_app.py	/^    def _get_token(self) -> str:$/;"	m	class:KrakApp
+_on_order	../kraken/krak_app.py	/^    def _on_order(self, js:dict) -> None:$/;"	m	class:KrakApp
+_on_order_status	../kraken/krak_app.py	/^    def _on_order_status(self, js:dict) -> None:$/;"	m	class:KrakApp
+_update_asks	../app/book.py	/^    def _update_asks(self, asks:MarketDataUpdate) -> None:$/;"	m	class:Book
+_update_bids	../app/book.py	/^    def _update_bids(self, bids:MarketDataUpdate) -> None:$/;"	m	class:Book
+_update_book	../app/book.py	/^    def _update_book(self, quote:Quote, quotes:List[Quote], is_bid:bool) -> None:$/;"	m	class:Book
+add_pending	../common/__init__.py	/^    def add_pending(self, order:Order) -> None:$/;"	m	class:WorkingOrderBook
+apply	../common/__init__.py	/^    def apply(self, func:Callable, *args):$/;"	m	class:Throttle
+best_ask	../app/book.py	/^    def best_ask(self) -> Quote:$/;"	m	class:Book
+best_bid	../app/book.py	/^    def best_bid(self) -> Quote:$/;"	m	class:Book
+cancel_all	../kraken/krak_app.py	/^    async def cancel_all(self):$/;"	m	class:KrakApp
+cancel_order	../app/krak_trader.py	/^    async def cancel_order(self, order:Order) -> None:$/;"	m	class:KrakTrader
+cancel_order	../app/krak_trader.py	/^    async def cancel_order(self, order_id:str):$/;"	m	class:KrakTrader
+cancel_order	../common/__init__.py	/^    def cancel_order(self, cancel:Order) -> None: $/;"	m	class:WorkingOrderBook
+cancel_order	../common/__init__.py	/^    def cancel_order(self, fn:Callable, order:Order):$/;"	m	class:Executor
+cancel_order	../kraken/krak_app.py	/^    async def cancel_order(self, order_id:str):$/;"	m	class:KrakApp
+close	../common/websocket_client.py	/^    async def close(self) -> None:$/;"	m	class:WebsocketClient
+connect	../common/websocket_client.py	/^    async def connect(self) -> None:$/;"	m	class:WebsocketClient
+connect	../kraken/krak_app.py	/^    async def connect(self) -> None:$/;"	m	class:KrakApp
+fill	../common/__init__.py	/^    def fill(self, fill:Order) -> None:$/;"	m	class:WorkingOrderBook
+get_orders	../common/__init__.py	/^    def get_orders(self, side:Side) -> Dict[str, Order]:$/;"	m	class:WorkingOrderBook
+get_pending_orders	../common/__init__.py	/^    def get_pending_orders(self, side:Side) -> Dict[str, Order]:$/;"	m	class:WorkingOrderBook
+main	../__main__.py	/^async def main():$/;"	f
+new_order	../app/krak_trader.py	/^    async def new_order(self, order:Order) -> None:$/;"	m	class:KrakTrader
+new_order	../common/__init__.py	/^    def new_order(self, fn:Callable, order:Order):$/;"	m	class:Executor
+new_order	../common/__init__.py	/^    def new_order(self, order:Order) -> None: $/;"	m	class:WorkingOrderBook
+new_order_single	../app/krak_trader.py	/^    async def new_order_single(self, side:str, order_type:str, pair:str, price:float, qty:float):$/;"	m	class:KrakTrader
+new_order_single	../kraken/krak_app.py	/^    async def new_order_single(self, side:str, order_type:str, pair:str, price:float, qty:float):$/;"	m	class:KrakApp
+on_cancel_order	../app/krak_trader.py	/^    async def on_cancel_order(self, order:Order) -> None: $/;"	m	class:KrakTrader
+on_cancel_order	../kraken/krak_app.py	/^    async def on_cancel_order(self, order:Order) -> None: pass$/;"	m	class:KrakApp
+on_fill	../app/krak_trader.py	/^    async def on_fill(self, order:Order) -> None:$/;"	m	class:KrakTrader
+on_fill	../kraken/krak_app.py	/^    async def on_fill(self, js:dict) -> None: $/;"	m	class:KrakApp
+on_market_data	../app/krak_trader.py	/^    async def on_market_data(self, update:MarketDataUpdate) -> None:$/;"	m	class:KrakTrader
+on_market_data	../kraken/krak_app.py	/^    async def on_market_data(self, update:MarketDataUpdate) -> None: pass$/;"	m	class:KrakApp
+on_market_data_snapshot	../app/krak_trader.py	/^    async def on_market_data_snapshot(self, snapshot:MarketDataSnapshot) -> None:$/;"	m	class:KrakTrader
+on_market_data_snapshot	../kraken/krak_app.py	/^    async def on_market_data_snapshot(self, snapshot:MarketDataSnapshot) -> None: pass$/;"	m	class:KrakApp
+on_message	../common/websocket_client.py	/^    def on_message(self, message:str) -> None:$/;"	m	class:WebsocketHandler
+on_message	../kraken/krak_app.py	/^    async def on_message(self, message:str) -> None:$/;"	m	class:KrakApp
+on_new_order	../app/krak_trader.py	/^    async def on_new_order(self, order:Order) -> None: $/;"	m	class:KrakTrader
+on_new_order	../kraken/krak_app.py	/^    async def on_new_order(self, order:Order) -> None: pass$/;"	m	class:KrakApp
+on_order_status	../kraken/krak_app.py	/^    async def on_order_status(self, js:dict) -> None:$/;"	m	class:KrakApp
+on_replace_order	../app/krak_trader.py	/^    async def on_replace_order(self, order:Order) -> None: $/;"	m	class:KrakTrader
+on_replace_order	../kraken/krak_app.py	/^    async def on_replace_order(self, order:Order) -> None: pass$/;"	m	class:KrakApp
+on_subscription_status	../app/krak_trader.py	/^    async def on_subscription_status(self, status:SubscriptionStatus) -> None:$/;"	m	class:KrakTrader
+on_subscription_status	../kraken/krak_app.py	/^    async def on_subscription_status(self, status:SubscriptionStatus) -> None: pass$/;"	m	class:KrakApp
+on_system_status	../app/krak_trader.py	/^    async def on_system_status(self, state:SystemState) -> None:$/;"	m	class:KrakTrader
+on_system_status	../kraken/krak_app.py	/^    async def on_system_status(self, state:SystemState) -> None: pass$/;"	m	class:KrakApp
+on_trade	../app/krak_trader.py	/^    async def on_trade(self, trade:TradeUpdate) -> None:$/;"	m	class:KrakTrader
+on_trade	../kraken/krak_app.py	/^    async def on_trade(self, trade:TradeUpdate) -> None: pass$/;"	m	class:KrakApp
+recv	../common/websocket_client.py	/^    async def recv(self, data:str) -> None:$/;"	m	class:WebsocketClient
+replace_order	../app/krak_trader.py	/^    async def replace_order(self, order:Order) -> None:$/;"	m	class:KrakTrader
+replace_order	../app/krak_trader.py	/^    async def replace_order(self, order_id:str, pair:str, order_type:str, price:float, qty:float):$/;"	m	class:KrakTrader
+replace_order	../common/__init__.py	/^    def replace_order(self, fn:Callable, order:Order):$/;"	m	class:Executor
+replace_order	../common/__init__.py	/^    def replace_order(self, replace:Order): $/;"	m	class:WorkingOrderBook
+replace_order	../kraken/krak_app.py	/^    async def replace_order(self, order_id:str, pair:str, order_type:str, price:float, qty:float):$/;"	m	class:KrakApp
+send	../common/websocket_client.py	/^    async def send(self, data:str) -> None:$/;"	m	class:WebsocketClient
+start	../common/websocket_client.py	/^    async def start(self, handler:WebsocketHandler) -> None:$/;"	m	class:WebsocketClient
+start	../kraken/krak_app.py	/^    async def start(self) -> None:$/;"	m	class:KrakApp
+subscribe_private	../kraken/krak_app.py	/^    async def subscribe_private(self, name:str) -> None:$/;"	m	class:KrakApp
+subscribe_public	../kraken/krak_app.py	/^    async def subscribe_public(self, pair:str, name:str) -> None:$/;"	m	class:KrakApp
+update	../app/book.py	/^    def update(self, md_update:MarketDataUpdate) -> None:$/;"	m	class:Book
+update	../app/strategy.py	/^    async def update(self):$/;"	m	class:StupidScalperStrategy
+vwap	../finmath/finmath.py	/^def vwap(quotes:List[Quote], depth:int = 10) -> Quote:$/;"	f

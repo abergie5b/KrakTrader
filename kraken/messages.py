@@ -1,36 +1,19 @@
 from typing import Union, List
 
-class Quote:
+from common import Quote, Trade
+
+class OrderStatus:
     def __init__(
         self,
-        price: float,
-        volume: float,
-        timestamp: float
+        event:str, 
+        status:str, 
+        txid:str,
+        originaltxid:str
     ):
-        self.price = float(price)
-        self.volume = float(volume)
-        self.timestamp = float(timestamp)
-
-    def __eq__(self, other):
-        return self.price == other.price and \
-               self.volume == other.volume and \
-               self.timestamp == other.timestamp
-
-    def __repr__(self):
-        return f'{self.timestamp}: {self.volume} @ {self.price}'
-
-
-class SnapshotQuotes:
-    def __init__(
-        self,
-        bids: List[Quote],
-        asks: List[Quote]
-    ):
-        self.bids = self._crack(bids)
-        self.asks = self._crack(asks)
-
-    def _crack(self, quotes:List[float]) -> List[Quote]:
-        return [ Quote(q[0], q[1], q[2]) for q in quotes ]
+        self.event = event
+        self.status = status
+        self.txid = txid
+        self.originaltxid = originaltxid
 
 
 class MarketDataUpdate:
@@ -59,6 +42,19 @@ class MarketDataUpdate:
         return f'{self.quotes}'
 
 
+class SnapshotQuotes:
+    def __init__(
+        self,
+        bids: List[Quote],
+        asks: List[Quote]
+    ):
+        self.bids = self._crack(bids)
+        self.asks = self._crack(asks)
+
+    def _crack(self, quotes:List[float]) -> List[Quote]:
+        return [ Quote(q[0], q[1], q[2]) for q in quotes ]
+
+
 class MarketDataSnapshot:
     def __init__(
         self,
@@ -74,25 +70,6 @@ class MarketDataSnapshot:
 
     def __repr__(self):
         return f'{self.quotes.bids} {self.quotes.asks}'
-
-
-class Trade:
-    def __init__(
-        self,
-        price: float,
-        volume: float,
-        time: float,
-        side: str,
-        orderType: str
-    ):
-        self.price = float(price)
-        self.volume = float(volume)
-        self.time = float(time)
-        self.side = side
-        self.orderType = orderType
-
-    def __repr__(self):
-        return f'{self.time}: {self.side} {self.volume} @ {self.price}'
 
 
 class TradeUpdate:
@@ -121,16 +98,19 @@ class SubscriptionStatus:
         js: dict
     ):
         self._js:dict = js
-        self.channelName:Union[str|None] = js['channelName'] if 'channelName' in js.keys() else None
-        self.event:str = js['event']
-        self.pair:List[str] = js['pair']
-        self.status:str = js['status']
+        self.subscription = js.get('subscription')
+        self.channelName:Union[str|None] = self.subscription.get('name')
+        self.event:str = js.get('event')
+        self.pair:List[str] = js.get('pair')
+        self.status:str = js.get('status')
 
-        self.channelID:Union[int|None] = js['channelID'] if 'channelID' in js.keys() else None
-        self.errorMessage:Union[str|None] = js['errorMessage'] if 'errorMessage' in js.keys() else None
+        self.channelID:Union[int|None] = js.get('channelID')
+        self.errorMessage:Union[str|None] = js.get('errorMessage')
 
     def __repr__(self):
-        string:str = f'{self.event}: {self.status} -> {self.channelName}|{self.pair}'
+        string:str = f'{self.event}: {self.status} -> {self.channelName}'
+        if self.pair:
+            string += f'|{self.pair}'
         if self.channelID:
             string += f' ({self.channelID})'
         if self.errorMessage:
@@ -153,4 +133,5 @@ class SystemState:
 
     def __repr__(self):
         return f'{self.event}: {self.status} ({self.version})'
+
 

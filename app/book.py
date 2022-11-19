@@ -4,14 +4,16 @@ from typing import List, Callable
 from kraken import (
     MarketDataUpdate,
     SnapshotQuotes,
-    Quote, 
 )
+from common import Quote
 
 class Book:
     def __init__(
         self,
+        symbol:str,
         snapshot: SnapshotQuotes
     ):
+        self.symbol = symbol
         self.bids:List[Quote] = [ bid for bid in snapshot.bids if bid.volume != 0 ]
         self.asks:List[Quote] = [ ask for ask in snapshot.asks if ask.volume != 0 ]
 
