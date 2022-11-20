@@ -16,10 +16,10 @@ async def main():
     )
     await app.connect()
 
+    await app.cancel_all()
+
     await app.subscribe_private('openOrders')
     await app.subscribe_private('ownTrades')
-
-    await app.cancel_all()
 
     await app.subscribe_public(symbols, 'book')
     await app.subscribe_public(symbols, 'trade')

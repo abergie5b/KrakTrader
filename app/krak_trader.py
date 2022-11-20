@@ -1,5 +1,5 @@
 import time
-from typing import Union
+from typing import Optional
 
 from .strategy import StupidScalperStrategy
 from .book import Book
@@ -8,16 +8,23 @@ from kraken import (
     SubscriptionStatus, 
     MarketDataUpdate, 
     SymbolConfigMap,
+    CancelAllStatus,
     TradeUpdate, 
     SystemState,
     KrakApp
 )
 from common import (
+    Side,
     Order, 
     Executor,
     WorkingOrderBook
 )
 
+def logger(f):
+    async def _wraps(*args):
+        print(f'{f.__name__} -> {args[1:]}')
+        await f(*args)
+    return _wraps
 
 class KrakTrader(KrakApp):
     def __init__(
@@ -29,10 +36,14 @@ class KrakTrader(KrakApp):
         secret:str
     ):
         super().__init__(url, auth_url, http_url, key, secret)
-        self._book:Union[Book|None] = None
+        self._book:Optional[Book] = None
         self._workingorders:WorkingOrderBook = WorkingOrderBook()
         self._executor:Executor = Executor(self._workingorders)
-        self._strategy = StupidScalperStrategy(self, SymbolConfigMap['XBT/USD'])
+        self._strategy:StupidScalperStrategy = StupidScalperStrategy(self, SymbolConfigMap['XBT/USD'])
+
+    @logger
+    async def on_connect(self) -> None:
+        pass
 
     async def on_market_data_snapshot(self, snapshot:MarketDataSnapshot) -> None:
         self._book = Book(snapshot.pair, snapshot.quotes)
@@ -44,46 +55,59 @@ class KrakTrader(KrakApp):
     async def on_trade(self, trade:TradeUpdate) -> None:
         pass
 
+    @logger
     async def on_subscription_status(self, status:SubscriptionStatus) -> None:
-        print(status)
-
-    async def on_system_status(self, state:SystemState) -> None:
-        print(state)
-
-    async def on_new_order(self, order:Order) -> None: 
         pass
 
+    @logger
+    async def on_system_status(self, state:SystemState) -> None:
+        pass
+
+    @logger
+    async def on_new_order_single(self, order:Order) -> None: 
+        pass
+
+    @logger
     async def on_replace_order(self, order:Order) -> None: 
         pass
 
+    @logger
     async def on_cancel_order(self, order:Order) -> None: 
         pass
 
-    async def on_fill(self, order:Order) -> None:
+    @logger
+    async def on_pending_order(self, pending:Order) -> None: 
+        self._workingorders.add_pending(pending)
+
+    @logger
+    async def on_new_order_ack(self, order_id: str) -> None:
+        self._workingorders.new_order_ack(order_id)
+
+    @logger
+    async def on_replace_order_ack(self, order_id: str) -> None:
+        self._workingorders.replace_order_ack(order_id)
+
+    @logger
+    async def on_cancel_order_ack(self, order_id: str) -> None:
+        self._workingorders.cancel_order_ack(order_id)
+
+    @logger
+    async def on_new_order_reject(self, OrderStatus: str) -> None:
         pass
 
-    async def new_order(self, order:Order) -> None:
-        self._workingorders.new_order(order)
+    @logger
+    async def on_replace_order_reject(self, OrderStatus: str) -> None:
+        pass
 
-    async def replace_order(self, order:Order) -> None:
-        self._workingorders.new_order(order)
+    @logger
+    async def on_cancel_order_reject(self, OrderStatus: str) -> None:
+        pass
 
-    async def cancel_order(self, order:Order) -> None:
-        self._workingorders.new_order(order)
+    @logger
+    async def on_fill(self, js:str) -> None:
+        pass
 
-    async def new_order_single(self, side:str, order_type:str, pair:str, price:float, qty:float):
-        await super().new_order_single(side, order_type, pair, price, qty)
-        order:Order = Order(pair, side, time.time(), qty, price, order_type)
-        self._workingorders.add_pending(order)
-        print(f'new order single -> {order}')
-
-    async def replace_order(self, order_id:str, pair:str, order_type:str, price:float, qty:float):
-        await super().replace_order(order_id, pair, order_type, price, qty)
-        order:Order = Order(pair, side, time.time(), qty, price, order_type)
-        self._workingorders.add_pending(order)
-
-    async def cancel_order(self, order_id:str):
-        await super().cancel_order(order_id)
-        order:Order = Order(pair, side, time.time(), qty, price, order_type)
-        self._workingorders.add_pending(order)
+    @logger
+    async def on_cancel_all(self, status: CancelAllStatus) -> None:
+        pass
 

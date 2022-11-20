@@ -1,3 +1,4 @@
+from typing import Optional
 from abc import ABC, abstractmethod
 from websockets import client, WebSocketClientProtocol
 
@@ -10,7 +11,7 @@ class WebsocketHandler:
 class WebsocketClient:
     def __init__(self, url:str):
         self._url = url
-        self._websocket:Union[WebSocketClientProtocol|None] = None
+        self._websocket:Optional[WebSocketClientProtocol] = None
 
     async def start(self, handler:WebsocketHandler) -> None:
         if not self._websocket or self._websocket.close_code:

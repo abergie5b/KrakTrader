@@ -1,19 +1,21 @@
 import json
 import asyncio
-from typing import Union, List
+from abc import ABC, abstractmethod
+from typing import List, Any
 
 from common import WebsocketClient, WebsocketHandler, Order, Side
 from .messages import (
     MarketDataSnapshot, 
     SubscriptionStatus, 
     MarketDataUpdate, 
+    CancelAllStatus,
     TradeUpdate, 
     SystemState,
     OrderStatus
 )
 
 
-class KrakApp(WebsocketHandler):
+class KrakApp(ABC, WebsocketHandler):
     def __init__(
         self, 
         url:str, 
@@ -36,6 +38,7 @@ class KrakApp(WebsocketHandler):
     async def connect(self) -> None:
         await self._websocket_public.connect()
         await self._websocket_private.connect()
+        await self.on_connect()
 
     async def start(self) -> None:
         await asyncio.gather(
@@ -43,47 +46,111 @@ class KrakApp(WebsocketHandler):
             self._websocket_private.start(self)
         )
 
-    async def on_market_data_snapshot(self, snapshot:MarketDataSnapshot) -> None: pass
-    async def on_market_data(self, update:MarketDataUpdate) -> None: pass
-    async def on_trade(self, trade:TradeUpdate) -> None: pass
-    async def on_subscription_status(self, status:SubscriptionStatus) -> None: pass
-    async def on_system_status(self, state:SystemState) -> None: pass
-    async def on_new_order(self, order:Order) -> None: pass
-    async def on_replace_order(self, order:Order) -> None: pass
-    async def on_cancel_order(self, order:Order) -> None: pass
+    @abstractmethod
+    async def on_connect(self) -> None:
+        ...
 
-    #  debug
+    @abstractmethod
+    async def on_market_data_snapshot(self, snapshot:MarketDataSnapshot) -> None:
+        ...
+
+    @abstractmethod
+    async def on_market_data(self, update:MarketDataUpdate) -> None:
+        ...
+
+    @abstractmethod
+    async def on_trade(self, trade:TradeUpdate) -> None:
+        ...
+
+    @abstractmethod
+    async def on_subscription_status(self, status:SubscriptionStatus) -> None:
+        ...
+
+    @abstractmethod
+    async def on_system_status(self, state:SystemState) -> None:
+        ...
+
+    @abstractmethod
+    async def on_pending_order(self, order:Order) -> None:
+        ...
+
+    @abstractmethod
+    async def on_new_order_single(self, order:Order) -> None:
+        ...
+
+    @abstractmethod
+    async def on_replace_order(self, order:Order) -> None:
+        ...
+
+    @abstractmethod
+    async def on_cancel_order(self, order:Order) -> None: 
+        ...
+
+    @abstractmethod
+    async def on_new_order_ack(self, order_id:str) -> None:
+        ...
+
+    @abstractmethod
+    async def on_replace_order_ack(self, order_id:str) -> None:
+        ...
+
+    @abstractmethod
+    async def on_cancel_order_ack(self, order_id:str) -> None:
+        ...
+
+    @abstractmethod
+    async def on_new_order_reject(self, OrderStatus: str) -> None:
+        ...
+
+    @abstractmethod
+    async def on_replace_order_reject(self, OrderStatus: str) -> None:
+        ...
+
+    @abstractmethod
+    async def on_cancel_order_reject(self, OrderStatus: str) -> None:
+        ...
+
+    @abstractmethod
+    async def on_cancel_all(self, status: CancelAllStatus) -> None:
+        ...
+
+    @abstractmethod
     async def on_fill(self, js:dict) -> None: 
-        print(order)
-
-    async def on_order_status(self, js:dict) -> None:
-        print(js)
-    #
+        ...
 
     async def on_message(self, message:str) -> None:
-        js:Union[List|dict] = json.loads(message)
         match message[0]:
             case '{':
+                js:Dict[Any, Any] = json.loads(message)
                 match js['event']:
                     case 'heartbeat': return
+
                     case 'systemStatus': 
                         await self.on_system_status(SystemState(**js))
+
                     case 'subscriptionStatus': 
                         await self.on_subscription_status(SubscriptionStatus(js))
 
-                    case 'openOrders':
-                        await self._on_order(js)
-
                     case 'addOrderStatus':
-                        await self.on_order_status(js)
+                        ordStatus:OrderStatus = OrderStatus(js)
+                        if ordStatus.status != 'ok':
+                            await self.on_new_order_reject(ordStatus)
 
                     case 'editOrderStatus':
-                        await self.on_order_status(js)
+                        ordStatus:OrderStatus = OrderStatus(js)
+                        if ordStatus.status != 'ok':
+                            await self.on_replace_order_reject(ordStatus)
 
                     case 'cancelOrderStatus':
-                        await self.on_order_status(js)
+                        ordStatus:OrderStatus = OrderStatus(js)
+                        if ordStatus.status != 'ok':
+                            await self.on_cancel_order_reject(ordStatus)
+
+                    case 'cancelAllStatus':
+                        await self.on_cancel_all(CancelAllStatus(**js))
 
             case '[':
+                js:List[Any] = json.loads(message)
                 match js[2]:
                     case 'book-10':
                         try:
@@ -98,41 +165,96 @@ class KrakApp(WebsocketHandler):
                     case 'ownTrades':
                         await self.on_fill(js)
 
-    async def new_order_single(self, side:str, order_type:str, pair:str, price:float, qty:float):
-        await self._websocket_private.send(
-            json.dumps({
-                'event': 'addOrder',
-                'token': self._token,
-                'ordertype': order_type,
-                'pair': pair,
-                'price': price,
-                'type': 'buy' if side == Side.BUY else 'sell',
-                'volume': qty
-            })
-        )
+                match js[1]:
+                    case 'openOrders':
+                        await self._on_open_orders(js[0])
+                
+    async def _on_open_orders(self, messages:List[Any]) -> None:
+        for message in messages:
+            order_id:str = next(iter(message))
+            krakOrder:dict = message[order_id]
+            match krakOrder['status']:
+                case 'pending':
+                    order:Order = Order(
+                        krakOrder['descr']['pair'],
+                        Side.BUY if krakOrder['descr']['type'] == 'buy' else Side.SELL,
+                        str(0),  # todo
+                        krakOrder['vol'],
+                        krakOrder['descr']['price'],
+                        krakOrder['descr']['ordertype'],
+                        krakOrder['status'],
+                        krakOrder['timeinforce']
+                    )
+                    order.order_id = order_id
+                    await self.on_pending_order(order)
+                case 'open':
+                    await self.on_new_order_ack(order_id)
+                case 'replaced':
+                    await self.on_replace_order_ack(order_id)
+                case 'canceled':
+                    await self.on_cancel_order_ack(order_id)
+                case _:
+                    print(f'openOrders -> unknown order status: {krakOrder["status"]} ({message})')
 
-    async def replace_order(self, order_id:str, pair:str, order_type:str, price:float, qty:float):
+    async def new_order_single(self, order:Order) -> None:
+        js:dict = {
+            'pair': order.symbol,
+            'type': 'buy' if order.side == Side.BUY else 'sell',
+            'token': self._token,
+            'volume': str(order.qty),
+            'price': str(order.price),
+            'ordertype': order.order_type,
+            'event': 'addOrder',
+            'timeinforce': 'GTC'
+        }
         await self._websocket_private.send(
-            json.dumps({
-                'event': 'editOrder',
-                'token': self._token,
-                'orderid': order_id,
-                'price': price,
-                'volume': qty,
-                'pair': pair
-            })
+            json.dumps(js)
         )
+        await self.on_new_order_single(order)
 
-    async def cancel_order(self, order_id:str):
+    async def replace_order(self, order:Order, price:float, qty:float) -> None:
+        js:dict = {
+            'pair': order.symbol,
+            'event': 'editOrder',
+            'token': self._token,
+            'orderid': order.order_id,
+            'price': str(price),
+            'volume': str(qty)
+        }
+        await self._websocket_private.send(
+            json.dumps(js)
+        )
+        pending:Order = Order(
+            order.symbol,
+            order.side,
+            order.clorder_id,
+            qty,
+            price,
+            'editOrder',
+            order.time_in_force
+        )
+        await self.on_replace_order(pending)
+
+    async def cancel_order(self, order:Order) -> None:
         await self._websocket_private.send(
             json.dumps({
                 'event': 'cancelOrder',
                 'token': self._token,
-                'txtid': [ order_id ],
+                'txtid': [ order.order_id ],
             })
         )
+        pending:Order = Order(
+            order.symbol,
+            order.side,
+            order.clorder_id,
+            qty,
+            price,
+            'cancelOrder',
+            order.time_in_force
+        )
+        await self.on_cancel_order(pending)
 
-    async def cancel_all(self):
+    async def cancel_all(self) -> None:
         await self._websocket_private.send(
             json.dumps({
                 'event': 'cancelAll',
@@ -161,12 +283,6 @@ class KrakApp(WebsocketHandler):
                 }
             })
         )
-
-    def _on_order_status(self, js:dict) -> None:
-        print(js)
-
-    def _on_order(self, js:dict) -> None:
-        print(js)
 
     def _get_token(self) -> str:
         import time

@@ -3,6 +3,7 @@ from .messages import (
     MarketDataSnapshot, 
     SubscriptionStatus, 
     MarketDataUpdate, 
+    CancelAllStatus,
     SnapshotQuotes,
     TradeUpdate, 
     SystemState,

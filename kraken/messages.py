@@ -1,36 +1,51 @@
-from typing import Union, List
+from typing import Optional, List, Any
+from dataclasses import dataclass, field, InitVar
 
 from common import Quote, Trade
 
+@dataclass
 class OrderStatus:
-    def __init__(
-        self,
-        event:str, 
-        status:str, 
-        txid:str,
-        originaltxid:str
-    ):
-        self.event = event
-        self.status = status
-        self.txid = txid
-        self.originaltxid = originaltxid
+    _js:InitVar[dict]
+    event:str = field(init=False)
+    status:str = field(init=False)
+
+    descr:Optional[str] = field(init=False)
+    txid:Optional[str] = field(init=False)
+    originaltxid:Optional[str] = field(init=False)
+    reqid:Optional[int] = field(init=False)
+    errorMessage:Optional[str] = field(init=False)
+
+    def __post_init__(self, _js):
+        self.event = _js.get('event')
+        self.status = _js.get('status')
+        self.descr = _js.get('descr')
+        self.txid = _js.get('txid')
+        self.originaltxid = _js.get('originaltxid')
+        self.reqid = _js.get('reqid')
+        self.errorMessage = _js.get('errorMessage')
 
 
+@dataclass
+class CancelAllStatus:
+    count: int
+    event: str
+    status: str
+
+
+@dataclass
 class MarketDataUpdate:
-    def __init__(
-        self,
-        channelID: int,
-        quotes: List[Quote],
-        channelName: str,
-        pair: str
-    ):
-        self.keys:List[str] = quotes.keys()
-        self.is_bid:bool = True if 'b' in self.keys else False
+    keys:List[str] = field(init=False)
+    is_bid:bool = field(init=False)
+    channelID: int
+    _quotes: InitVar[List[Any]]
+    quotes:List[Quote] = field(init=False)
+    channelName: str
+    pair: str
 
-        self.channelID = channelID
-        self.quotes = self._crack(quotes)
-        self.channelName = channelName
-        self.pair = pair
+    def __post_init__(self, _quotes):
+        self.keys = _quotes.keys()
+        self.is_bid = True if 'b' in self.keys else False
+        self.quotes = self._crack(_quotes)
 
     def _crack(self, quotes: List) -> List[Quote]:
         if self.is_bid:
@@ -42,48 +57,46 @@ class MarketDataUpdate:
         return f'{self.quotes}'
 
 
+@dataclass
 class SnapshotQuotes:
-    def __init__(
-        self,
-        bids: List[Quote],
-        asks: List[Quote]
-    ):
-        self.bids = self._crack(bids)
-        self.asks = self._crack(asks)
+    _bids:InitVar[List[Any]]
+    _asks:InitVar[List[Any]]
+    bids: List[Quote] = field(init=False)
+    asks: List[Quote] = field(init=False)
+
+    def __post_init__(self, _bids, _asks):
+        self.bids = self._crack(_bids)
+        self.asks = self._crack(_asks)
 
     def _crack(self, quotes:List[float]) -> List[Quote]:
         return [ Quote(q[0], q[1], q[2]) for q in quotes ]
 
 
+@dataclass
 class MarketDataSnapshot:
-    def __init__(
-        self,
-        channelID: int,
-        quotes: SnapshotQuotes,
-        channelName: str,
-        pair: str
-    ):
-        self.channelID = channelID
-        self.quotes = SnapshotQuotes(quotes['bs'], quotes['as'])
-        self.channelName = channelName
-        self.pair = pair
+    channelID: int
+    _quotes:InitVar[List[Any]]
+    quotes: SnapshotQuotes = field(init=False)
+    channelName: str
+    pair: str
+
+    def __post_init__(self, _quotes):
+        self.quotes = SnapshotQuotes(_quotes['bs'], _quotes['as'])
 
     def __repr__(self):
         return f'{self.quotes.bids} {self.quotes.asks}'
 
 
+@dataclass
 class TradeUpdate:
-    def __init__(
-        self,
-        channelID: int,
-        trades: List[Trade],
-        channelName: str,
-        pair: str
-    ):
-        self.channelID = channelID
-        self.trades = self._crack(trades)
-        self.channelName = channelName
-        self.pair = pair
+    channelID: int
+    _trades:InitVar[List[Any]]
+    trades: List[Trade] = field(init=False)
+    channelName: str
+    pair: str
+
+    def __post_init__(self, _trades):
+        self.trades = self._crack(_trades)
 
     def _crack(self, trades: List) -> List[Trade]:
         return [ Trade(t[0], t[1], t[2], t[3], t[4]) for t in trades ]
@@ -92,20 +105,25 @@ class TradeUpdate:
         return f'{self.trades}'
 
 
+@dataclass
 class SubscriptionStatus:
-    def __init__(
-        self,
-        js: dict
-    ):
-        self._js:dict = js
-        self.subscription = js.get('subscription')
-        self.channelName:Union[str|None] = self.subscription.get('name')
-        self.event:str = js.get('event')
-        self.pair:List[str] = js.get('pair')
-        self.status:str = js.get('status')
+    subscription:Optional[str] = field(init=False)
+    channelName:Optional[str] = field(init=False)
+    event:Optional[str] = field(init=False)
+    pair:Optional[List[str]] = field(init=False)
+    status:Optional[str] = field(init=False)
+    channelID:Optional[int] = field(init=False)
+    errorMessage:Optional[str] = field(init=False)
 
-        self.channelID:Union[int|None] = js.get('channelID')
-        self.errorMessage:Union[str|None] = js.get('errorMessage')
+    _js:InitVar[dict]
+    def __post_init__(self, _js):
+        self.subscription = _js.get('subscription')
+        self.channelName = self.subscription.get('name')
+        self.event = _js.get('event')
+        self.pair = _js.get('pair')
+        self.status = _js.get('status')
+        self.channelID = _js.get('channelID')
+        self.errorMessage = _js.get('errorMessage')
 
     def __repr__(self):
         string:str = f'{self.event}: {self.status} -> {self.channelName}'
@@ -118,18 +136,12 @@ class SubscriptionStatus:
         return string
 
 
+@dataclass
 class SystemState:
-    def __init__(
-        self, 
-        connectionID:int,
-        event:str, 
-        status:str, 
-        version:str
-    ):
-        self.connectionID = connectionID
-        self.event = event
-        self.status = status
-        self.version = version
+    connectionID:int
+    event:str
+    status:str
+    version:str
 
     def __repr__(self):
         return f'{self.event}: {self.status} ({self.version})'
