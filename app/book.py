@@ -29,7 +29,7 @@ class Book:
     def best_ask(self) -> Quote:
         return self.asks[0]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         book:str = ''
         for ask in self.asks[::-1]:
             book += f'\t\t{ask.price}\t{ask.volume}\n'
@@ -49,10 +49,9 @@ class Book:
 
         # quote needs to be placed in book
         # todo organize bids / asks more efficiently
+        key:Callable = lambda q: q.price
         if is_bid:
-            key:Callable = lambda q: -1 * q.price
-        else:
-            key:Callable = lambda q: q.price
+            key = lambda q: -1 * q.price
         bisect.insort(quotes, quote, key=key)
 
         # todo bisect first to find index

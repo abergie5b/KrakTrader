@@ -1,7 +1,7 @@
-from typing import Optional, List, Any
+from typing import Optional, Dict, List, Any
 from dataclasses import dataclass, field, InitVar
 
-from common import Quote, Trade
+from common import Quote, Trade, Side
 
 @dataclass
 class OrderStatus:
@@ -10,9 +10,9 @@ class OrderStatus:
     status:str = field(init=False)
 
     descr:Optional[str] = field(init=False)
+    reqid:int = field(init=False)
     txid:Optional[str] = field(init=False)
     originaltxid:Optional[str] = field(init=False)
-    reqid:Optional[int] = field(init=False)
     errorMessage:Optional[str] = field(init=False)
 
     def __post_init__(self, _js):
@@ -21,7 +21,7 @@ class OrderStatus:
         self.descr = _js.get('descr')
         self.txid = _js.get('txid')
         self.originaltxid = _js.get('originaltxid')
-        self.reqid = _js.get('reqid')
+        self.reqid = int(_js.get('reqid'))
         self.errorMessage = _js.get('errorMessage')
 
 
@@ -47,7 +47,7 @@ class MarketDataUpdate:
         self.is_bid = True if 'b' in self.keys else False
         self.quotes = self._crack(_quotes)
 
-    def _crack(self, quotes: List) -> List[Quote]:
+    def _crack(self, quotes: Dict[str, List[Any]]) -> List[Quote]:
         if self.is_bid:
             return [ Quote(q[0], q[1], q[2]) for q in quotes['b'] ]
         else:
@@ -68,7 +68,7 @@ class SnapshotQuotes:
         self.bids = self._crack(_bids)
         self.asks = self._crack(_asks)
 
-    def _crack(self, quotes:List[float]) -> List[Quote]:
+    def _crack(self, quotes:List[Any]) -> List[Quote]:
         return [ Quote(q[0], q[1], q[2]) for q in quotes ]
 
 
@@ -107,7 +107,7 @@ class TradeUpdate:
 
 @dataclass
 class SubscriptionStatus:
-    subscription:Optional[str] = field(init=False)
+    subscription:Dict[str, str] = field(init=False)
     channelName:Optional[str] = field(init=False)
     event:Optional[str] = field(init=False)
     pair:Optional[List[str]] = field(init=False)
@@ -125,7 +125,7 @@ class SubscriptionStatus:
         self.channelID = _js.get('channelID')
         self.errorMessage = _js.get('errorMessage')
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         string:str = f'{self.event}: {self.status} -> {self.channelName}'
         if self.pair:
             string += f'|{self.pair}'

@@ -1,7 +1,7 @@
 import time
-from typing import Optional
+from typing import Any, List, Callable, Coroutine, Optional
 
-from .strategy import StupidScalperStrategy
+import app
 from .book import Book
 from kraken import (
     MarketDataSnapshot, 
@@ -9,13 +9,16 @@ from kraken import (
     MarketDataUpdate, 
     SymbolConfigMap,
     CancelAllStatus,
+    OrderStatus,
     TradeUpdate, 
     SystemState,
     KrakApp
 )
 from common import (
     Side,
+    Fill,
     Order, 
+    Trade,
     Executor,
     WorkingOrderBook
 )
@@ -38,8 +41,8 @@ class KrakTrader(KrakApp):
         super().__init__(url, auth_url, http_url, key, secret)
         self._book:Optional[Book] = None
         self._workingorders:WorkingOrderBook = WorkingOrderBook()
-        self._executor:Executor = Executor(self._workingorders)
-        self._strategy:StupidScalperStrategy = StupidScalperStrategy(self, SymbolConfigMap['XBT/USD'])
+        self._strategy:app.StupidScalperStrategy = app.StupidScalperStrategy(self, SymbolConfigMap['XBT/USD'])
+        self._trade_monitor:app.TradeMonitor = app.TradeMonitor(SymbolConfigMap['XBT/USD'])
 
     @logger
     async def on_connect(self) -> None:
@@ -49,11 +52,13 @@ class KrakTrader(KrakApp):
         self._book = Book(snapshot.pair, snapshot.quotes)
 
     async def on_market_data(self, update:MarketDataUpdate) -> None:
-        self._book.update(update)
-        await self._strategy.update()
+        if self._book:
+            self._book.update(update)
+            await self._strategy.update()
 
-    async def on_trade(self, trade:TradeUpdate) -> None:
-        pass
+    @logger
+    async def on_trade(self, trade:Trade) -> None:
+        self._trade_monitor.update(trade)
 
     @logger
     async def on_subscription_status(self, status:SubscriptionStatus) -> None:
@@ -64,48 +69,60 @@ class KrakTrader(KrakApp):
         pass
 
     @logger
-    async def on_new_order_single(self, order:Order) -> None: 
-        pass
-
-    @logger
-    async def on_replace_order(self, order:Order) -> None: 
-        pass
-
-    @logger
-    async def on_cancel_order(self, order:Order) -> None: 
-        pass
-
-    @logger
     async def on_pending_order(self, pending:Order) -> None: 
+        pass
+
+    @logger
+    async def on_open_order(self, order_id:str) -> None:
+        pass
+
+    @logger
+    async def on_replaced_order(self, order_id:str) -> None:
+        pass
+
+    @logger
+    async def on_canceled_order(self, order_id:str) -> None:
+        pass
+
+    @logger
+    async def on_new_order_single(self, pending:Order) -> None: 
         self._workingorders.add_pending(pending)
 
     @logger
-    async def on_new_order_ack(self, order_id: str) -> None:
-        self._workingorders.new_order_ack(order_id)
+    async def on_replace_order(self, pending:Order) -> None: 
+        self._workingorders.add_pending(pending)
 
     @logger
-    async def on_replace_order_ack(self, order_id: str) -> None:
-        self._workingorders.replace_order_ack(order_id)
+    async def on_cancel_order(self, pending:Order) -> None: 
+        self._workingorders.add_pending(pending)
 
     @logger
-    async def on_cancel_order_ack(self, order_id: str) -> None:
-        self._workingorders.cancel_order_ack(order_id)
+    async def on_new_order_ack(self, order_id:Optional[str], clorder_id: int) -> None:
+        self._workingorders.new_order_ack(order_id, clorder_id)
 
     @logger
-    async def on_new_order_reject(self, OrderStatus: str) -> None:
-        pass
+    async def on_replace_order_ack(self, order_id:Optional[str], clorder_id: int) -> None:
+        self._workingorders.replace_order_ack(order_id, clorder_id)
 
     @logger
-    async def on_replace_order_reject(self, OrderStatus: str) -> None:
-        pass
+    async def on_cancel_order_ack(self, clorder_id: int) -> None:
+        self._workingorders.cancel_order_ack(clorder_id)
 
     @logger
-    async def on_cancel_order_reject(self, OrderStatus: str) -> None:
-        pass
+    async def on_new_order_reject(self, status: OrderStatus) -> None:
+        self._workingorders.remove_pending(status.reqid)
 
     @logger
-    async def on_fill(self, js:str) -> None:
-        pass
+    async def on_replace_order_reject(self, status: OrderStatus) -> None:
+        self._workingorders.remove_pending(status.reqid)
+
+    @logger
+    async def on_cancel_order_reject(self, status: OrderStatus) -> None:
+        self._workingorders.remove_pending(status.reqid)
+
+    @logger
+    async def on_fill(self, fill:Fill) -> None:
+        self._workingorders.fill(fill)
 
     @logger
     async def on_cancel_all(self, status: CancelAllStatus) -> None:

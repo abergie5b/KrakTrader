@@ -5,8 +5,9 @@ from .messages import (
     MarketDataUpdate, 
     CancelAllStatus,
     SnapshotQuotes,
+    OrderStatus,
     TradeUpdate, 
-    SystemState,
+    SystemState
 )
 
 class SymbolConfig:
