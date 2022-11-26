@@ -2,26 +2,26 @@ import bisect
 from typing import List, Callable
 
 from kraken import (
-    MarketDataUpdate,
-    SnapshotQuotes,
+    BookUpdate,
+    BookSnapshot
 )
-from common import Quote
+from common import Quote, get_logger
+
 
 class Book:
     def __init__(
         self,
-        symbol:str,
-        snapshot: SnapshotQuotes
+        snapshot: BookSnapshot
     ):
-        self.symbol = symbol
-        self.bids:List[Quote] = [ bid for bid in snapshot.bids if bid.volume != 0 ]
-        self.asks:List[Quote] = [ ask for ask in snapshot.asks if ask.volume != 0 ]
+        self.symbol = snapshot.pair
+        self.bids: List[Quote] = [bid for bid in snapshot.snapshot.bs if bid.volume != 0]
+        self.asks: List[Quote] = [ask for ask in snapshot.snapshot.as_ if ask.volume != 0]
 
-    def update(self, md_update:MarketDataUpdate) -> None:
-        if md_update.is_bid:
-            self._update_bids(md_update)
-        else:
-            self._update_asks(md_update)
+        self._logger = get_logger(__name__)
+
+    def update(self, md_update: BookUpdate) -> None:
+        self._update_bids(md_update.b)
+        self._update_asks(md_update.a)
 
     def best_bid(self) -> Quote:
         return self.bids[0]
@@ -30,14 +30,14 @@ class Book:
         return self.asks[0]
 
     def __repr__(self) -> str:
-        book:str = ''
+        book: str = ''
         for ask in self.asks[::-1]:
             book += f'\t\t{ask.price}\t{ask.volume}\n'
         for bid in self.bids:
             book += f'{bid.volume}\t{bid.price}\n'
         return book
 
-    def _update_book(self, quote:Quote, quotes:List[Quote], is_bid:bool) -> None:
+    def _update_book(self, quote: Quote, quotes: List[Quote], is_bid: bool) -> None:
         for order in quotes:
             # update volume on level
             if order.price == quote.price:
@@ -49,7 +49,7 @@ class Book:
 
         # quote needs to be placed in book
         # todo organize bids / asks more efficiently
-        key:Callable = lambda q: q.price
+        key: Callable = lambda q: q.price
         if is_bid:
             key = lambda q: -1 * q.price
         bisect.insort(quotes, quote, key=key)
@@ -58,11 +58,11 @@ class Book:
         self.bids = self.bids[:10]
         self.asks = self.asks[:10]
 
-    def _update_bids(self, bids:MarketDataUpdate) -> None:
-        for quote in bids.quotes:
+    def _update_bids(self, bids: List[Quote]) -> None:
+        for quote in bids:
             self._update_book(quote, self.bids, True)
 
-    def _update_asks(self, asks:MarketDataUpdate) -> None:
-        for quote in asks.quotes:
+    def _update_asks(self, asks: List[Quote]) -> None:
+        for quote in asks:
             self._update_book(quote, self.asks, False)
 

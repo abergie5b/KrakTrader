@@ -1,36 +1,43 @@
-import time
+import sys
 from typing import Optional
 
 import app
-from .book import Book
 from kraken import SymbolConfig
 
-from common import Side, Order, Quote, WorkingOrderBook
+from common import (
+    Side,
+    Order,
+    Quote,
+    get_logger
+)
+
 
 class StupidScalperStrategy:
-    def __init__(self, krak_app:app.KrakTrader, symbol_config:SymbolConfig):
+    def __init__(self, krak_app: app.KrakTrader, symbol_config: SymbolConfig):
         self._app = krak_app
         self._symbol_config = symbol_config
 
         #
-        self.last_bid:Optional[Quote] = None
-        self.last_ask:Optional[Quote] = None
+        self.last_bid: Optional[Quote] = None
+        self.last_ask: Optional[Quote] = None
 
         #
         self._has_sent_order = False
         self._has_replaced_order = False
         self._has_canceled_order = False
 
+        self._logger = get_logger(__name__)
+
     async def update(self) -> None:
         if self._app._book:
-            best_bid:Quote = self._app._book.best_bid()
-            best_ask:Quote = self._app._book.best_ask()
+            best_bid: Quote = self._app._book.best_bid()
+            best_ask: Quote = self._app._book.best_ask()
 
             if not self._has_sent_order:
-                order:Order = Order(
+                order: Order = Order(
                     self._symbol_config.name,
                     Side.SELL,
-                    None,
+                    -sys.maxsize,
                     0.0001,
                     best_ask.price + 100,
                     'limit',
@@ -53,7 +60,7 @@ class StupidScalperStrategy:
 
             if self.last_bid and self.last_ask and \
                (self.last_bid != best_bid or self.last_ask != best_ask):
-                print(best_bid, best_ask)
+                self._logger.info(f'{best_bid} | {best_ask}')
 
             self.last_bid = best_bid
             self.last_ask = best_ask

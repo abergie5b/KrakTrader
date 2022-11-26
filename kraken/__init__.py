@@ -1,14 +1,17 @@
 from .krak_app import KrakApp
 from .messages import (
-    MarketDataSnapshot, 
-    SubscriptionStatus, 
-    MarketDataUpdate, 
+    CancelAllOrdersAfterStatus,
+    SubscriptionStatus,
     CancelAllStatus,
-    SnapshotQuotes,
+    BookSnapshot,
+    BookUpdate,
     OrderStatus,
-    TradeUpdate, 
-    SystemState
+    TradePayload,
+    SystemStatus,
+    Ticker,
+    Ohlc
 )
+
 
 class SymbolConfig:
     def __init__(self, name:str, ccy:str, tick_size:float):
@@ -17,7 +20,7 @@ class SymbolConfig:
         self.tick_size = tick_size
 
 
-SymbolConfigMap:dict = {
+SymbolConfigMap: dict = {
     'XBT/USD': SymbolConfig('XBT/USD', 'USD', 0.1)
 }
 
