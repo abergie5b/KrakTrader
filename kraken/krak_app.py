@@ -9,6 +9,8 @@ from typing import (
 from .krak_app_base import KrakAppBase
 from common import (
     get_logger,
+    orderPool,
+    fillPool,
     Trade,
     Order, 
     Fill, 
@@ -16,15 +18,16 @@ from common import (
 )
 from .messages import (
     CancelAllOrdersAfterStatus,
-    BookSnapshot,
     SubscriptionStatus,
-    BookUpdate,
     CancelAllStatus,
+    bookUpdatePool,
     TickerPayload,
     SpreadPayload,
     TradePayload,
+    BookSnapshot,
     SystemStatus,
     OrderStatus,
+    BookUpdate,
     Heartbeat,
     Spread,
     Ticker,
@@ -104,7 +107,7 @@ class KrakApp(KrakAppBase):
                 case 'canceled':
                     await self.on_open_order_cancel(order_id)
                 case _:
-                    self._logger.error(f'openOrders -> unknown order status: {krak_order["status"]} ({message})')
+                    self._logger.error(f'openOrders -> unknown order status: ({message})')
 
     async def new_order_single(self, order: Order) -> None:
         req_id: int = self._get_req_id()
@@ -207,7 +210,16 @@ class KrakApp(KrakAppBase):
         await self.on_book_update_snapshot(BookSnapshot(*snapshot))
 
     async def on_book(self, update: list) -> None:
-        await self.on_book_update(BookUpdate(*update))
+        if len(update) > 4:
+            quote = update.pop(2)
+            await self.on_book_update(BookUpdate(*update))
+
+            update[1] = quote
+            await self.on_book_update(BookUpdate(*update))
+
+        else:
+            book_update: BookUpdate = BookUpdate(*update)
+            await self.on_book_update(book_update)
 
     async def on_ohlc_(self, ohlc: list) -> None:
         await self.on_ohlc(Ohlc(*ohlc))

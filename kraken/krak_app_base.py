@@ -62,8 +62,9 @@ class KrakAppBase(WebsocketHandler):
         if self._websocket_private:
             await self._websocket_private.connect()
 
-    async def start(self) -> None:
-        tasks = []
+    async def start(self, tasks=None) -> None:
+        if tasks is None:
+            tasks = []
         if self._websocket_public:
             tasks.append(self._websocket_public.read_til_close(self))
 
@@ -127,7 +128,7 @@ class KrakAppBase(WebsocketHandler):
         match message[0]:
             case '[':
                 js_list: List[Any] = json.loads(message)
-                md_update: str = js_list[2]
+                md_update: str = js_list[-2]
                 order_update: str = js_list[1]
                 if md_update in ('book-10', 'book-25', 'book-100', 'book-500', 'book-1000'):
                     if 'a' in js_list[1] or 'b' in js_list[1]:

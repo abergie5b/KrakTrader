@@ -1,5 +1,5 @@
-from typing import Optional, Union
-from abc import ABC, abstractmethod
+from typing import Optional
+from abc import abstractmethod
 from websockets.client import connect, WebSocketClientProtocol
 
 from .logger import get_logger
@@ -31,10 +31,6 @@ class WebsocketClient:
 
     async def send(self, data: str) -> None:
         if self._websocket:
-            await self._websocket.send(data)
-
-    async def recv(self, data: str) -> None:
-        if self._websocket:        
             await self._websocket.send(data)
 
     async def connect(self) -> None:

@@ -3,9 +3,14 @@ from typing import List, Callable
 
 from kraken import (
     BookUpdate,
-    BookSnapshot
+    BookSnapshot,
+    bookUpdatePool
 )
-from common import Quote, get_logger
+from common import (
+    Quote,
+    get_logger,
+    quotePool
+)
 
 
 class Book:
@@ -20,8 +25,10 @@ class Book:
         self._logger = get_logger(__name__)
 
     def update(self, md_update: BookUpdate) -> None:
-        self._update_bids(md_update.b)
-        self._update_asks(md_update.a)
+        for quote in md_update.b:
+            self._update_book(quote, self.bids, True)
+        for quote in md_update.a:
+            self._update_book(quote, self.asks, False)
 
     def best_bid(self) -> Quote:
         return self.bids[0]
@@ -38,11 +45,12 @@ class Book:
         return book
 
     def _update_book(self, quote: Quote, quotes: List[Quote], is_bid: bool) -> None:
-        for order in quotes:
+        for x in range(len(quotes)):
+            order = quotes[x]
             # update volume on level
             if order.price == quote.price:
                 if quote.volume == 0:
-                    quotes.remove(order)
+                    quotes.pop(x)
                 else:
                     order.volume = quote.volume
                 return
@@ -57,12 +65,3 @@ class Book:
         # todo bisect first to find index
         self.bids = self.bids[:10]
         self.asks = self.asks[:10]
-
-    def _update_bids(self, bids: List[Quote]) -> None:
-        for quote in bids:
-            self._update_book(quote, self.bids, True)
-
-    def _update_asks(self, asks: List[Quote]) -> None:
-        for quote in asks:
-            self._update_book(quote, self.asks, False)
-

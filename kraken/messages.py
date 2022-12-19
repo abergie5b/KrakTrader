@@ -1,7 +1,14 @@
-from typing import Optional, Dict, List, Any
+import sys
+from typing import Optional, Final, Dict, List, Any
 from dataclasses import dataclass, field, InitVar
 
-from common import Quote, Trade
+from common import (
+    Pool,
+    Quote,
+    Trade,
+    quotePool,
+    PooledObject
+)
 
 
 @dataclass
@@ -44,7 +51,7 @@ class CancelAllStatus:
 
 
 @dataclass
-class BookUpdate:
+class BookUpdate(PooledObject):
     channelID: int
     _quotes: InitVar[Dict[str, List[Any]]]
     b: List[Quote] = field(init=False)
@@ -52,9 +59,29 @@ class BookUpdate:
     channelName: str
     pair: str
 
+    @staticmethod
+    def create_empty():
+        return BookUpdate(-sys.maxsize, {'b': [], 'a': []}, '', '')
+
+    def init(self, _channelID, quotes, _channelName, pair):
+        self.channelID = _channelID
+        self.__post_init__(quotes)
+        self.channelName = _channelName
+        self.pair = pair
+        return self
+
+    def clean(self):
+        self.channelID = -sys.maxsize
+        self.b = []
+        self.a = []
+        self.channelName = ''
+        self.pair = ''
+
     def __post_init__(self, _quotes):
-        self.b = [Quote(q[0], q[1], q[2]) for q in _quotes.get('b') or []]
-        self.a = [Quote(q[0], q[1], q[2]) for q in _quotes.get('a') or []]
+        bids = _quotes.get('b')
+        asks = _quotes.get('a')
+        self.b = [Quote(q[0], q[1], q[2]) for q in bids] if bids else []
+        self.a = [Quote(q[0], q[1], q[2]) for q in asks] if asks else []
 
 
 @dataclass
@@ -295,3 +322,6 @@ class SpreadPayload:
 
     def __post_init__(self, _spread):
         self.spread = Spread(*_spread)
+
+
+bookUpdatePool: Final[Pool] = Pool(128, BookUpdate.create_empty)

@@ -1,4 +1,3 @@
-import datetime as dt
 from queue import LifoQueue
 from typing import Dict, Optional
 
@@ -11,9 +10,12 @@ class TradeMonitor:
         self._symbol_config = symbol_config
         self._trades: LifoQueue[Trade] = LifoQueue(maxsize=100)
 
+    def trades(self):
+        return list(self._trades.queue)
+
     def get_aggregate(self) -> Dict[int, float]:
         aggregates: Dict[int, float] = {}
-        for trade in list(self._trades):
+        for trade in list(self._trades.queue):
             price: int = int(trade.price / self._symbol_config.tick_size)
             qty: Optional[float] = aggregates.get(price, None)
             if not qty:
@@ -26,4 +28,4 @@ class TradeMonitor:
         if self._trades.full():
             self._trades.get()
         self._trades.put(trade)
-        print(self.get_aggregate())
+        #print(self.get_aggregate())

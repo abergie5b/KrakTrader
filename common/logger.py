@@ -14,7 +14,7 @@ def _configure_logger(logger_name: str, file_name: str) -> logging.Logger:
     _logger.handlers.clear()
     _logger.addHandler(sh)
 
-    fh = logging.FileHandler(file_name)
+    fh = logging.FileHandler(file_name, mode='w')
     fh.setFormatter(formatter)
     _logger.addHandler(fh)
     return _logger
