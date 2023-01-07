@@ -9,8 +9,6 @@ from typing import (
 from .krak_app_base import KrakAppBase
 from common import (
     get_logger,
-    orderPool,
-    fillPool,
     Trade,
     Order, 
     Fill, 
@@ -20,7 +18,6 @@ from .messages import (
     CancelAllOrdersAfterStatus,
     SubscriptionStatus,
     CancelAllStatus,
-    bookUpdatePool,
     TickerPayload,
     SpreadPayload,
     TradePayload,

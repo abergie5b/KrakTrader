@@ -2,7 +2,6 @@ import sys
 from typing import Optional
 
 import app
-from .book import Book
 from .publisher import Publisher
 from kraken import (
     SubscriptionStatus,
@@ -16,13 +15,13 @@ from kraken import (
     KrakApp,
     Spread,
     Ticker,
+    Book,
     Ohlc
 )
 from common import (
     WorkingOrderBook,
-    PositionTracker,
+    PositionManager,
     get_logger,
-    quotePool,
     FinMath,
     Order,
     Trade,
@@ -54,7 +53,7 @@ class KrakTrader(KrakApp):
         self._symbol_config: SymbolConfig = SymbolConfigMap[symbol]
         self._book: Optional[Book] = None
         self._workingorders: WorkingOrderBook = WorkingOrderBook()
-        self._position_tracker: PositionTracker = PositionTracker()
+        self._position_tracker: PositionManager = PositionManager()
         self._subscriptions = []
         self._system_status = None
         self._strategy: app.StupidScalperStrategy = app.StupidScalperStrategy(self, self._symbol_config)

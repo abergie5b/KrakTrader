@@ -6,7 +6,6 @@ from common import (
     Pool,
     Quote,
     Trade,
-    quotePool,
     PooledObject
 )
 

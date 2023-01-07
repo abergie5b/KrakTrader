@@ -13,6 +13,7 @@ from .messages import (
     Ticker,
     Ohlc
 )
+from .book import Book
 
 
 class SymbolConfig:

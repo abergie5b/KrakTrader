@@ -1,15 +1,13 @@
 import bisect
 from typing import List, Callable
 
-from kraken import (
+from . import (
     BookUpdate,
-    BookSnapshot,
-    bookUpdatePool
+    BookSnapshot
 )
 from common import (
     Quote,
-    get_logger,
-    quotePool
+    get_logger
 )
 
 
